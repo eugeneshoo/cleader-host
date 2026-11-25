@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>클리더 위탁 숙소 현황</title>
+<style>
+body{margin:0;background:#eef1f5;color:#1b2430;font:15px/1.6 -apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif}
+.box{max-width:480px;margin:40px auto;padding:20px;background:#fff;border:1px solid #e1e6ed;border-radius:12px}
+</style>
+</head>
+<body>
+<div class="box"><b>클리더 위탁 숙소 현황</b><p id="msg">불러오는 중…</p></div>
+<script>
+// 클리더 위탁 숙소 현황 (호스트용). 데이터는 클리더 구글 스크립트에서 로그인 쿠키 없이 받아 옵니다.
+// 구글 계정이 여러 개 로그인된 브라우저에서도 열리게 하려고 바깥 주소에서 엽니다.
+(function () {
+  var API = 'https://script.google.com/macros/s/AKfycbwXneEon-Nujp2Z5_tSrp0gQTUAHrkzYx4oTWr7uRDXAfmq3UgxKPCI7ys76DFx9rfC/exec';
+  var TEL = '문의 클리더 1668-2817';
+  var q = new URLSearchParams(location.search), id = q.get('id') || '', token = q.get('token') || '', month = q.get('month') || '';
+  function fail(t) { document.getElementById('msg').textContent = t + ' ' + TEL; }
+  function call(params) {
+    var u = API + '?page=wt804api&' + new URLSearchParams(params).toString();
+    return fetch(u, { credentials: 'omit', redirect: 'follow', cache: 'no-store' }).then(function (r) { return r.json(); });
+  }
+  if (!id || !token) { fail('링크가 올바르지 않습니다.'); return; }
+  // 화면 안의 google.script.run.wt804Data(...) 호출을 같은 창구로 돌려 줌
+  var shim = '<script>(function(){var API=' + JSON.stringify(API) + ';' +
+    'function call(a){var u=API+"?page=wt804api&"+new URLSearchParams({fn:"data",id:a.id||"",token:a.token||"",month:a.month||"",name:a.name||""}).toString();return fetch(u,{credentials:"omit",redirect:"follow",cache:"no-store"}).then(function(r){return r.json();});}' +
+    'function R(s,f){this.s=s;this.f=f;}R.prototype.withSuccessHandler=function(s){return new R(s,this.f);};R.prototype.withFailureHandler=function(f){return new R(this.s,f);};' +
+    'R.prototype.wt804Data=function(a){var s=this.s,f=this.f;call(a||{}).then(function(r){if(r&&r.ok){if(s)s(r.data);}else if(f)f(new Error(r&&r.err||"불러오지 못했습니다."));},function(e){if(f)f(e);});};' +
+    'window.google={script:{run:new R(null,null)}};})();<' + '/script>';
+  call({ fn: 'html', id: id, token: token, month: month }).then(function (r) {
+    if (!r || !r.ok) { fail((r && r.err) || '불러오지 못했습니다.'); return; }
+    var h = String(r.html || ''), i = h.indexOf('<head>');
+    var add = '<meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>클리더 위탁 숙소 현황</title>' + shim;
+    h = i >= 0 ? h.slice(0, i + 6) + add + h.slice(i + 6) : add + h;
+    document.open(); document.write(h); document.close();
+  }, function () { fail('불러오지 못했습니다. 잠시 후 다시 열어 주세요.'); });
+})();
+</script>
+</body>
+</html>
